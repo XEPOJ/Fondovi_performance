@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Raiffeisen Cash vs samostalno ulaganje</title>
+<title>Fond VS Samostalno</title>
 <style>
 :root{--bg:#fff;--fg:#1d2329;--mut:#667;--card:#f4f5f7;--line:#d9dde3;--fund:#d4a900;--self:#2a6fdb;--bad:#c0392b;--good:#1e8449}
 @media (prefers-color-scheme:dark){:root{--bg:#14171a;--fg:#e8eaed;--mut:#9aa3ad;--card:#1e2328;--line:#343b43;--fund:#f2c400;--self:#6aa3ff;--bad:#ff7a6b;--good:#5fd18a}}
@@ -17,7 +17,9 @@ h1{font-size:22px;margin:0 0 4px}h2{font-size:17px;margin:28px 0 10px}
 .card h3{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
 label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0;font-size:14px}
 input[type=number]{width:110px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);text-align:right}
-select{padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+label.stack{flex-direction:column;align-items:stretch;gap:4px}
+label.stack select{width:100%}
+select{max-width:100%;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
 .note{font-size:12.5px;color:var(--mut);margin:8px 0 0}
 .warn{border-left:3px solid var(--fund);padding:6px 10px;margin:10px 0;font-size:13px;background:var(--card)}
 table{width:100%;border-collapse:collapse;font-size:14px}
@@ -26,12 +28,13 @@ th:first-child,td:first-child{text-align:left}
 .res{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
 .big{font-size:26px;font-weight:700}
 .bar{height:22px;border-radius:4px;margin:4px 0}
+#pos input{width:72px}
 .neg{color:var(--bad)}.pos{color:var(--good)}
 </style>
 </head>
 <body>
 <main>
-<h1>Raiffeisen Cash vs samostalno ulaganje u istu strukturu</h1>
+<h1>Fond VS Samostalno</h1>
 <p class="sub">Oba ulaganja kreću danas, u RSD, sa istim pozicijama (struktura fonda iz prospekta, stanje 31.12.2025).</p>
 
 <div class="grid">
@@ -50,7 +53,7 @@ th:first-child,td:first-child{text-align:left}
       <tr><td>Ostale obveznice RS (18,64% − 12,56%)</td><td>obveznica</td><td><input type="number" class="pw" value="6.08" step="0.01"></td><td><input type="number" class="py" value="5" step="0.05"></td></tr>
       <tr><td>Korporativne obveznice RSD</td><td>obveznica</td><td><input type="number" class="pw" value="2.71" step="0.01"></td><td><input type="number" class="py" value="5" step="0.05"></td></tr>
     </table>
-    <p class="note">Oročenje: bez naknade i poreza, 5% na godinu dana, isto za oba ulaganja. Obveznice: prinos oko 5% preuzet je od serije RSMFRSD55940 i primenjen na sve tri pozicije obveznica kao zamena, jer prinosi serije RSMFRSD89592 (stvarna najveća pozicija fonda) i korporativnih nisu potvrđeni. Udeli se normalizuju na 100%. Kuponi se reinvestiraju po istoj stopi, kamata na državne obveznice nije oporezovana.</p>
+    <p class="note">Oročenje: bez naknade i poreza, 5% na godinu dana, isto za oba ulaganja. Obveznice: prinos oko 5% preuzet je od serije RSMFRSD55940 i primenjen na sve tri pozicije obveznica kao zamena, jer prinosi serije RSMFRSD89592 (stvarna najveća pozicija fonda) i korporativnih nisu potvrđeni. Udeli se normalizuju na 100%. Prinos obveznice je godišnji kuponski prinos, kupovina je po nominali i drži se do dospeća na kraju horizonta. Kamata na državne obveznice nije oporezovana.</p>
   </div>
   <div class="card">
     <h3>Samostalno: trošak kupovine obveznica</h3>
@@ -59,13 +62,17 @@ th:first-child,td:first-child{text-align:left}
     <label>Centralni registar % <input type="number" id="cCr" value="0.1" step="0.01"></label>
     <label>Fiksno (otvaranje računa, RSD) <input type="number" id="cFix" value="300" step="50"></label>
     <label>Trošak prodaje pre dospeća % <input type="number" id="cExit" value="0" step="0.05"></label>
+    <label>Isplata kupona
+      <select id="cpFreq"><option value="1">godišnje</option><option value="2">polugodišnje</option></select></label>
+    <label>Administracija isplate kupona % <input type="number" id="cAdmin" value="0.15" step="0.05"></label>
+    <label>Reinvestiranje kupona % god. <input type="number" id="rc" value="5" step="0.05"></label>
     <label>PDV 20% na provizije
       <select id="vat"><option value="0">ne</option><option value="1">da</option></select></label>
-    <p class="note">Broker 0,5–0,7% je prosek koji je zadat. Ako se obveznica drži do dospeća, trošak izlaska je 0. Maksimum provizije berze (2.500 RSD) nije uračunat.</p>
+    <p class="note">Broker 0,5–0,7% je prosek koji je zadat. Broker naplaćuje 0,15% od svake isplate kupona. Kupon stiže u gotovini, pa ga reinvestiraš (podrazumevano u depozit po 5%, bez troška), dok fond kupone reinvestira automatski. Ako se obveznica drži do dospeća, trošak izlaska je 0. Maksimum provizije berze (2.500 RSD) nije uračunat.</p>
   </div>
   <div class="card">
     <h3>Fond</h3>
-    <label>Prinos fonda
+    <label class="stack">Prinos fonda
       <select id="fundMode">
         <option value="model">Ista imovina − troškovi fonda</option>
         <option value="actual">Istorijski neto 2023–2025 (referenca)</option>
@@ -102,6 +109,9 @@ th:first-child,td:first-child{text-align:left}
 
 <h2>Osetljivost: naknada za upravljanje fonda</h2>
 <table id="sens2"></table>
+
+<h2>Osetljivost: učestalost isplate kupona</h2>
+<table id="sens3"></table>
 </main>
 <script>
 const $=id=>document.getElementById(id);
@@ -119,7 +129,7 @@ function read(){
   const tw=w.reduce((a,b)=>a+b,0)||1;
   return {A:num('amount'),N:Math.max(1,Math.round(num('years'))),
     pos:POS.map((p,i)=>({name:p[0],type:p[1],w:w[i]/tw,y:y[i]})),
-    cBroker:num('cBroker'),cBelex:num('cBelex'),cCr:num('cCr'),cFix:num('cFix'),cExit:num('cExit'),
+    cBroker:num('cBroker'),cBelex:num('cBelex'),cCr:num('cCr'),cFix:num('cFix'),cExit:num('cExit'),freq:parseInt($('cpFreq').value)||1,cAdmin:num('cAdmin'),rc:num('rc'),
     vat:$('vat').value==='1',mode:$('fundMode').value,
     f:[num('f1'),num('f2'),num('f3')],mgmt:num('mgmt'),other:num('other')};
 }
@@ -131,12 +141,17 @@ function calc(o){
   const nBond=o.pos.filter(p=>p.type==='B'&&p.w>0).length;
   const fixPer=nBond?o.cFix*vat/nBond:0;       // otvaranje racuna HoV se placa jednom
   const feeF=(o.mgmt+o.other)/100;
+  const adm=o.cAdmin/100*vat, fq=o.freq;
   const rows=o.pos.map(p=>{
     const amt=A*p.w, isB=p.type==='B'&&p.w>0;
     const entry=isB?amt*entryRate+fixPer:0;
-    const g=t=>Math.pow(1+p.y/100,t);
-    return {...p,amt,entry,
-      self:t=>(amt-entry)*g(t)*(isB&&t===N?1-exitRate:1),
+    const P=amt-entry, c=p.y/100/fq, rcf=o.rc/100/fq;
+    // bruto rast bez troskova: depozit godisnje, obveznica sa kuponom fq puta godisnje
+    const g=t=>isB?Math.pow(1+c,fq*t):Math.pow(1+p.y/100,t);
+    const coupons=t=>{let v=0;for(let k=1;k<=fq*t;k++)v+=P*c*(1-adm)*Math.pow(1+rcf,fq*t-k);return v};
+    const admin=isB?P*c*adm*fq*N:0;
+    return {...p,amt,entry,admin,
+      self:t=>isB?P*(t===N?1-exitRate:1)+coupons(t):amt*g(t),
       free:t=>amt*g(t),
       fund:t=>amt*g(t)*Math.pow(1-feeF,t)};
   });
@@ -145,7 +160,7 @@ function calc(o){
   let fundPath;
   if(o.mode==='actual'){fundPath=[A];for(let t=1;t<=N;t++)fundPath.push(fundPath[t-1]*(1+o.f[(t-1)%3]/100))}
   else fundPath=sum((r,t)=>r.fund(t));
-  return {rows,selfPath,freePath,fundPath,entryTotal:rows.reduce((s,r)=>s+r.entry,0),entryRate,N,A};
+  return {rows,selfPath,freePath,fundPath,entryTotal:rows.reduce((s,r)=>s+r.entry,0),adminTotal:rows.reduce((s,r)=>s+r.admin,0),entryRate,N,A};
 }
 
 function render(){
@@ -170,7 +185,8 @@ function render(){
    <tr><th></th><th>Fond</th><th>Samostalno</th></tr>
    <tr><td>Vrednost bez ikakvih troškova</td><td>${fmt(X)}</td><td>${fmt(X)}</td></tr>
    <tr><td>Ukupni troškovi</td><td class="neg">−${fmt(X-F).replace(' RSD','')} RSD</td><td class="neg">−${fmt(X-S).replace(' RSD','')} RSD</td></tr>
-   <tr><td>Struktura troškova</td><td>${(o.mgmt+o.other).toFixed(2)}% godišnje na celu imovinu (upravljanje ${o.mgmt.toFixed(2)}% + ostalo ${o.other.toFixed(2)}%)</td><td>jednokratno ${pct(r.entryRate)} samo na obveznice + ${o.cFix} RSD fiksno</td></tr>
+   <tr><td>Struktura troškova</td><td>${(o.mgmt+o.other).toFixed(2)}% godišnje na celu imovinu (upravljanje ${o.mgmt.toFixed(2)}% + ostalo ${o.other.toFixed(2)}%)</td><td>jednokratno ${pct(r.entryRate)} samo na obveznice + ${o.cFix} RSD fiksno + ${o.cAdmin}% na svaku isplatu kupona</td></tr>
+   <tr><td>Od toga: administracija isplate kupona (${o.freq===2?'polugodišnje':'godišnje'})</td><td>—</td><td>${fmt(r.adminTotal)}</td></tr>
    <tr><td>Vrednost nakon troškova</td><td>${fmt(F)}</td><td>${fmt(S)}</td></tr>`;
 
   const w=900,h=260,pad=40,max=Math.max(...r.fundPath,...r.selfPath,...r.freePath),min=A*0.99;
@@ -197,6 +213,13 @@ function render(){
     s2+=`<tr><td>${m.toFixed(2)}% + ${o.other.toFixed(2)}% ostalo</td><td>${fmt(v)}</td><td class="${S-v>=0?'pos':'neg'}">${sign(S-v)}</td></tr>`;
   });
   $('sens2').innerHTML=s2;
+
+  let s3='<tr><th>Isplata kupona</th><th>Administracija ukupno</th><th>Samostalno nakon '+N+'g.</th><th>Razlika prema fondu</th></tr>';
+  [[1,'godišnje'],[2,'polugodišnje']].forEach(([f,n])=>{
+    const rr=calc({...o,freq:f}),v=last(rr.selfPath),fv=last(calc({...o,freq:f}).fundPath);
+    s3+=`<tr><td>${n}</td><td>${fmt(rr.adminTotal)}</td><td>${fmt(v)}</td><td class="${v-fv>=0?'pos':'neg'}">${sign(v-fv)}</td></tr>`;
+  });
+  $('sens3').innerHTML=s3;
 }
 document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',render));
 render();
