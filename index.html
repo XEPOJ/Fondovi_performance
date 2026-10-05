@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raiffeisen Cash vs samostalno ulaganje</title>
+<style>
+:root{--bg:#fff;--fg:#1d2329;--mut:#667;--card:#f4f5f7;--line:#d9dde3;--fund:#d4a900;--self:#2a6fdb;--bad:#c0392b;--good:#1e8449}
+@media (prefers-color-scheme:dark){:root{--bg:#14171a;--fg:#e8eaed;--mut:#9aa3ad;--card:#1e2328;--line:#343b43;--fund:#f2c400;--self:#6aa3ff;--bad:#ff7a6b;--good:#5fd18a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:17px;margin:28px 0 10px}
+.sub{color:var(--mut);margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h3{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0;font-size:14px}
+input[type=number]{width:110px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);text-align:right}
+select{padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+.note{font-size:12.5px;color:var(--mut);margin:8px 0 0}
+.warn{border-left:3px solid var(--fund);padding:6px 10px;margin:10px 0;font-size:13px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.big{font-size:26px;font-weight:700}
+.bar{height:22px;border-radius:4px;margin:4px 0}
+.neg{color:var(--bad)}.pos{color:var(--good)}
+</style>
+</head>
+<body>
+<main>
+<h1>Raiffeisen Cash vs samostalno ulaganje u istu strukturu</h1>
+<p class="sub">Poređenje na horizontu od 3 godine u RSD. Struktura fonda preuzeta iz prospekta (stanje 31.12.2025).</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>Ulaganje</h3>
+    <label>Iznos (RSD) <input type="number" id="amount" value="1000000" step="10000"></label>
+    <label>Horizont (godina) <input type="number" id="years" value="3" min="1" max="10" step="1"></label>
+    <h3 style="margin-top:14px">Struktura (kao fond)</h3>
+    <label>Oročeni depoziti % <input type="number" id="wD" value="78.64" step="0.01"></label>
+    <label>Obveznice RS + korporativne % <input type="number" id="wB" value="21.36" step="0.01"></label>
+    <p class="note">Prospekt: depoziti 78,64%, obveznice RS 18,64%, korporativne RSD 2,71%, ostalo ~0%. Korporativne su ovde svrstane uz državne obveznice radi jednostavnosti. Udeli se normalizuju na 100%.</p>
+  </div>
+  <div class="card">
+    <h3>Samostalno: prinosi</h3>
+    <label>Oročenje 1 god. (% god.) <input type="number" id="rD" value="5" step="0.05"></label>
+    <label>Obveznica RS do ~3Y (% god.) <input type="number" id="rB" value="4.55" step="0.05"></label>
+    <p class="note">Oročenje: pretpostavka da je bez naknade i poreza, produžava se po istoj stopi. Obveznica 4,55% je prinos sa aukcije obveznice RS koja dospeva u julu 2030, jedine potvrđene brojke. To nije tačna trogodišnja stopa, pa je potrebno uneti prinos obveznice koju stvarno kupujete. Kuponi se reinvestiraju po istoj stopi, kamata nije oporezovana.</p>
+  </div>
+  <div class="card">
+    <h3>Samostalno: trošak kupovine obveznica</h3>
+    <label>Broker % <input type="number" id="cBroker" value="0.6" step="0.05"></label>
+    <label>Beogradska berza % <input type="number" id="cBelex" value="0.0833" step="0.0001"></label>
+    <label>Centralni registar % <input type="number" id="cCr" value="0.1" step="0.01"></label>
+    <label>Fiksno (otvaranje računa, RSD) <input type="number" id="cFix" value="300" step="50"></label>
+    <label>Trošak prodaje pre dospeća % <input type="number" id="cExit" value="0" step="0.05"></label>
+    <label>PDV 20% na provizije
+      <select id="vat"><option value="0">ne</option><option value="1">da</option></select></label>
+    <p class="note">Broker 0,5–0,7% je prosek koji je zadat. Ako se obveznica drži do dospeća, trošak izlaska je 0. Maksimum provizije berze (2.500 RSD) nije uračunat.</p>
+  </div>
+  <div class="card">
+    <h3>Fond</h3>
+    <label>Prinos fonda
+      <select id="fundMode">
+        <option value="actual">Stvarni neto 2023–2025</option>
+        <option value="model">Model: isti bruto − troškovi</option>
+      </select></label>
+    <label>Neto 2023 % <input type="number" id="f1" value="4.40" step="0.01"></label>
+    <label>Neto 2024 % <input type="number" id="f2" value="4.13" step="0.01"></label>
+    <label>Neto 2025 % <input type="number" id="f3" value="2.83" step="0.01"></label>
+    <label>Naknada za upravljanje % <input type="number" id="mgmt" value="1.00" step="0.05"></label>
+    <label>Ostali troškovi fonda % <input type="number" id="other" value="0.12" step="0.01"></label>
+    <p class="note">Stvarni neto prinosi su već umanjeni za troškove fonda. Model uzima isti bruto prinos kao samostalno ulaganje i oduzima troškove iz prospekta (1,00% upravljanje, 0,12–0,17% ostalo, ukupno 1,12% u 2025). Ako je horizont duži od 3 godine, u stvarnom režimu se ponavlja prosek ove tri godine.</p>
+  </div>
+</div>
+
+<div class="warn">Prinosi iz prošlosti ne garantuju buduće rezultate. Stvarni prinos fonda 2025 (2,83% neto, oko 3,95% bruto) pokazuje da fond depozite ne oročava po stopi od 5%, pa se rezultat "stvarni" i "model" mogu razlikovati. Troškovi kupovine (broker, berza, registar) su prosečne vrednosti i treba ih proveriti kod svog brokera.</div>
+
+<h2>Rezultat nakon <span id="yTxt">3</span> godine</h2>
+<div class="res">
+  <div class="card"><h3>Fond</h3><div class="big" id="fundVal"></div><div id="fundRet"></div></div>
+  <div class="card"><h3>Samostalno</h3><div class="big" id="selfVal"></div><div id="selfRet"></div></div>
+  <div class="card"><h3>Razlika (samostalno − fond)</h3><div class="big" id="diffVal"></div><div id="diffRet"></div></div>
+</div>
+
+<h2>Gde nastaje razlika</h2>
+<table id="bd"></table>
+
+<h2>Vrednost po godinama</h2>
+<div id="chart"></div>
+
+<h2>Osetljivost: provizija brokera</h2>
+<table id="sens"></table>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const num=id=>parseFloat($(id).value)||0;
+const fmt=x=>Math.round(x).toLocaleString('sr-RS')+' RSD';
+const pct=x=>(x*100).toFixed(2)+'%';
+
+function calc(o){
+  const A=o.A,N=o.N;
+  const tw=o.wD+o.wB, wD=o.wD/tw, wB=o.wB/tw;
+  const vat=o.vat?1.2:1;
+  const entryRate=(o.cBroker+o.cCr)/100*vat+o.cBelex/100*vat;
+  const Ab=A*wB, Ad=A*wD;
+  const entryCost=Ab*entryRate+(Ab>0?o.cFix*vat:0);
+  const exitCost=o.cExit/100*vat;
+  const path=(vD,vB)=>{const out=[];for(let t=0;t<=N;t++)out.push(vD(t)+vB(t));return out};
+  const selfPath=path(t=>Ad*Math.pow(1+o.rD/100,t),
+                      t=>(Ab-entryCost)*Math.pow(1+o.rB/100,t)*(t===N?1-exitCost:1));
+  const noCostPath=path(t=>Ad*Math.pow(1+o.rD/100,t),t=>Ab*Math.pow(1+o.rB/100,t));
+  // fond
+  let fundPath=[A];
+  if(o.mode==='actual'){
+    const r=[o.f1,o.f2,o.f3];
+    for(let t=1;t<=N;t++)fundPath.push(fundPath[t-1]*(1+r[(t-1)%3]/100));
+  }else{
+    const g=wD*o.rD+wB*o.rB, net=(g-o.mgmt-o.other)/100;
+    for(let t=1;t<=N;t++)fundPath.push(fundPath[t-1]*(1+net));
+  }
+  // fond bez troskova (model)
+  const gross=(wD*o.rD+wB*o.rB)/100;
+  const grossPath=[];for(let t=0;t<=N;t++)grossPath.push(A*Math.pow(1+gross,t));
+  return {selfPath,noCostPath,fundPath,grossPath,entryCost,entryRate};
+}
+function read(){
+  return {A:num('amount'),N:Math.max(1,Math.round(num('years'))),wD:num('wD'),wB:num('wB'),
+    rD:num('rD'),rB:num('rB'),cBroker:num('cBroker'),cBelex:num('cBelex'),cCr:num('cCr'),
+    cFix:num('cFix'),cExit:num('cExit'),vat:$('vat').value==='1',mode:$('fundMode').value,
+    f1:num('f1'),f2:num('f2'),f3:num('f3'),mgmt:num('mgmt'),other:num('other')};
+}
+const last=a=>a[a.length-1];
+const ann=(v,A,N)=>Math.pow(v/A,1/N)-1;
+function sign(x){return (x>=0?'+':'')+Math.round(x).toLocaleString('sr-RS')+' RSD'}
+
+function render(){
+  const o=read(), r=calc(o), A=o.A, N=o.N;
+  $('yTxt').textContent=N;
+  const F=last(r.fundPath), S=last(r.selfPath);
+  $('fundVal').textContent=fmt(F);
+  $('fundRet').textContent=`ukupno ${pct(F/A-1)} · ${pct(ann(F,A,N))} god.`;
+  $('selfVal').textContent=fmt(S);
+  $('selfRet').textContent=`ukupno ${pct(S/A-1)} · ${pct(ann(S,A,N))} god.`;
+  const d=S-F;
+  $('diffVal').textContent=sign(d);
+  $('diffVal').className='big '+(d>=0?'pos':'neg');
+  $('diffRet').textContent=`${((ann(S,A,N)-ann(F,A,N))*100).toFixed(2)} p.p. godišnje`;
+
+  const G=last(r.grossPath), NC=last(r.noCostPath);
+  const costSelf=NC-S, costFund=G-F;
+  $('bd').innerHTML=`
+   <tr><th></th><th>Fond</th><th>Samostalno</th></tr>
+   <tr><td>Vrednost bez ikakvih troškova</td><td>${fmt(G)}</td><td>${fmt(NC)}</td></tr>
+   <tr><td>Troškovi (fond: razlika prema bruto modelu; samostalno: kupovina)</td><td class="neg">−${fmt(costFund).replace(' RSD','')}</td><td class="neg">−${fmt(costSelf).replace(' RSD','')}</td></tr>
+   <tr><td>Vrednost nakon troškova</td><td>${fmt(F)}</td><td>${fmt(S)}</td></tr>
+   <tr><td>Jednokratni trošak kupovine obveznica</td><td>—</td><td>${fmt(r.entryCost)} (${pct(r.entryRate)} + fiksno)</td></tr>
+   <tr><td>Troškovi fonda godišnje</td><td>${(o.mgmt+o.other).toFixed(2)}%</td><td>—</td></tr>`;
+
+  // chart
+  const w=900,h=260,pad=40,max=Math.max(...r.fundPath,...r.selfPath,...r.grossPath);
+  const min=A*0.99, X=t=>pad+t*(w-2*pad)/N, Y=v=>h-pad-(v-min)/(max-min)*(h-2*pad);
+  const line=(arr,c,dash)=>`<polyline fill="none" stroke="${c}" stroke-width="2.5" ${dash?'stroke-dasharray="6 4"':''} points="${arr.map((v,t)=>X(t)+','+Y(v)).join(' ')}"/>`;
+  let ticks='';for(let t=0;t<=N;t++)ticks+=`<text x="${X(t)}" y="${h-14}" text-anchor="middle" font-size="12" fill="currentColor">${t}</text>`;
+  $('chart').innerHTML=`<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Vrednost ulaganja po godinama">
+    <line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="var(--line)"/>
+    ${line(r.grossPath,'var(--mut)',true)}${line(r.fundPath,'var(--fund)')}${line(r.selfPath,'var(--self)')}${ticks}
+    <text x="${pad}" y="16" font-size="12" fill="var(--fund)">— fond</text>
+    <text x="${pad+70}" y="16" font-size="12" fill="var(--self)">— samostalno</text>
+    <text x="${pad+180}" y="16" font-size="12" fill="var(--mut)">- - bez troškova</text></svg>`;
+
+  let s='<tr><th>Provizija brokera</th><th>Trošak kupovine</th><th>Samostalno nakon '+N+'g.</th><th>Razlika prema fondu</th></tr>';
+  [0.3,0.5,0.6,0.7,1.0].forEach(b=>{
+    const rr=calc({...o,cBroker:b}), v=last(rr.selfPath);
+    s+=`<tr><td>${b.toFixed(1)}%</td><td>${fmt(rr.entryCost)}</td><td>${fmt(v)}</td><td class="${v-F>=0?'pos':'neg'}">${sign(v-F)}</td></tr>`;
+  });
+  $('sens').innerHTML=s;
+}
+document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',render));
+render();
+</script>
+</body>
+</html>
