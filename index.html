@@ -79,10 +79,11 @@ th:first-child,td:first-child{text-align:left}
       </select></label>
     <label>Naknada za upravljanje % <input type="number" id="mgmt" value="1.00" step="0.05"></label>
     <label>Ostali troškovi fonda % <input type="number" id="other" value="0.12" step="0.01"></label>
+    <label>Porez na kapitalnu dobit pri otkupu % <input type="number" id="tax" value="15" step="1"></label>
     <label>Neto 2023 % <input type="number" id="f1" value="4.40" step="0.01"></label>
     <label>Neto 2024 % <input type="number" id="f2" value="4.13" step="0.01"></label>
     <label>Neto 2025 % <input type="number" id="f3" value="2.83" step="0.01"></label>
-    <p class="note">Glavni režim: fond drži iste pozicije kao ti i plaća godišnje 1,00% upravljanje i 0,12% ostalo (depozitar, revizor, transakcije), ukupno 1,12% u 2025. Nema ulazne ni izlazne naknade. Istorijski režim koristi stvarne neto prinose i služi samo kao referenca.</p>
+    <p class="note">Glavni režim: fond drži iste pozicije kao ti i plaća godišnje 1,00% upravljanje i 0,12% ostalo (depozitar, revizor, transakcije), ukupno 1,12% u 2025. Nema ulazne ni izlazne naknade. Pri otkupu plaćaš 15% poreza na kapitalnu dobit (razlika između cene otkupa i sticanja). Istorijski režim koristi stvarne neto prinose i služi samo kao referenca.</p>
   </div>
 </div>
 
@@ -131,7 +132,7 @@ function read(){
     pos:POS.map((p,i)=>({name:p[0],type:p[1],w:w[i]/tw,y:y[i]})),
     cBroker:num('cBroker'),cBelex:num('cBelex'),cCr:num('cCr'),cFix:num('cFix'),cExit:num('cExit'),freq:parseInt($('cpFreq').value)||1,cAdmin:num('cAdmin'),rc:num('rc'),
     vat:$('vat').value==='1',mode:$('fundMode').value,
-    f:[num('f1'),num('f2'),num('f3')],mgmt:num('mgmt'),other:num('other')};
+    f:[num('f1'),num('f2'),num('f3')],mgmt:num('mgmt'),other:num('other'),tax:num('tax')};
 }
 
 function calc(o){
@@ -160,7 +161,9 @@ function calc(o){
   let fundPath;
   if(o.mode==='actual'){fundPath=[A];for(let t=1;t<=N;t++)fundPath.push(fundPath[t-1]*(1+o.f[(t-1)%3]/100))}
   else fundPath=sum((r,t)=>r.fund(t));
-  return {rows,selfPath,freePath,fundPath,entryTotal:rows.reduce((s,r)=>s+r.entry,0),adminTotal:rows.reduce((s,r)=>s+r.admin,0),entryRate,N,A};
+  const fundGross=fundPath;
+  fundPath=fundGross.map(v=>v-Math.max(0,v-A)*o.tax/100);
+  return {rows,selfPath,freePath,fundPath,fundGross,entryTotal:rows.reduce((s,r)=>s+r.entry,0),adminTotal:rows.reduce((s,r)=>s+r.admin,0),entryRate,N,A};
 }
 
 function render(){
@@ -186,6 +189,7 @@ function render(){
    <tr><td>Vrednost bez ikakvih troškova</td><td>${fmt(X)}</td><td>${fmt(X)}</td></tr>
    <tr><td>Ukupni troškovi</td><td class="neg">−${fmt(X-F).replace(' RSD','')} RSD</td><td class="neg">−${fmt(X-S).replace(' RSD','')} RSD</td></tr>
    <tr><td>Struktura troškova</td><td>${(o.mgmt+o.other).toFixed(2)}% godišnje na celu imovinu (upravljanje ${o.mgmt.toFixed(2)}% + ostalo ${o.other.toFixed(2)}%)</td><td>jednokratno ${pct(r.entryRate)} samo na obveznice + ${o.cFix} RSD fiksno + ${o.cAdmin}% na svaku isplatu kupona</td></tr>
+   <tr><td>Od toga: porez na kapitalnu dobit (${o.tax}% pri otkupu)</td><td>${fmt(last(r.fundGross)-F)}</td><td>0 RSD (kamata na depozit i kuponi RS neoporezovani)</td></tr>
    <tr><td>Od toga: administracija isplate kupona (${o.freq===2?'polugodišnje':'godišnje'})</td><td>—</td><td>${fmt(r.adminTotal)}</td></tr>
    <tr><td>Vrednost nakon troškova</td><td>${fmt(F)}</td><td>${fmt(S)}</td></tr>`;
 
